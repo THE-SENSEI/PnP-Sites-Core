@@ -1,4 +1,5 @@
-﻿using System;
+﻿using OfficeDevPnP.Core.Diagnostics;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -93,6 +94,10 @@ namespace OfficeDevPnP.Core.Framework.Provisioning.Model
             string metadataMappingFile = null, ObjectSecurity security = null) :
             this()
         {
+            Log.Debug(Constants.LOGGING_SOURCE, "Directory");
+            Log.Debug(Constants.LOGGING_SOURCE, "Directory Src {0}", src);
+            Log.Debug(Constants.LOGGING_SOURCE, "Directory Folder {0}", folder);
+            Log.Debug(Constants.LOGGING_SOURCE, "Directory MetadataMappingFile {0}", metadataMappingFile);
             this.Src = src;
             this.Folder = folder;
             this.Overwrite = overwrite;

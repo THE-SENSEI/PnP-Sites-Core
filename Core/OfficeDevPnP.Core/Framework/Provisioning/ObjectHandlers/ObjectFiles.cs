@@ -37,16 +37,19 @@ namespace OfficeDevPnP.Core.Framework.Provisioning.ObjectHandlers
 
                 web.EnsureProperties(w => w.ServerRelativeUrl, w => w.Url);
 
+                Log.Debug(Constants.LOGGING_SOURCE, "Build on the fly the list of additional files coming from the Directories");
                 // Build on the fly the list of additional files coming from the Directories
                 var directoryFiles = new List<Model.File>();
                 foreach (var directory in template.Directories)
                 {
+                    Log.Debug(Constants.LOGGING_SOURCE, "Processing Folder {0}", directory.Src); 
                     var metadataProperties = directory.GetMetadataProperties();
                     directoryFiles.AddRange(directory.GetDirectoryFiles(metadataProperties));
                 }
 
                 foreach (var file in template.Files.Union(directoryFiles))
                 {
+                    Log.Debug(Constants.LOGGING_SOURCE, "Processing File {0}", file.Src);
                     var folderName = parser.ParseString(file.Folder);
 
                     if (folderName.ToLower().StartsWith((web.ServerRelativeUrl.ToLower())))
@@ -409,15 +412,33 @@ namespace OfficeDevPnP.Core.Framework.Provisioning.ObjectHandlers
 
             if (directory.MetadataMappingFile != null)
             {
+                Log.Debug(Constants.LOGGING_SOURCE, "MetadataMappingFile not null");
+
+                if(String.IsNullOrEmpty(directory.MetadataMappingFile))
+                {
+                    Log.Debug(Constants.LOGGING_SOURCE, "MetadataMappingFile empty");
+                    return result;
+                }
+
                 var metadataPropertiesStream = directory.ParentTemplate.Connector.GetFileStream(directory.MetadataMappingFile);
                 if (metadataPropertiesStream != null)
                 {
+                    Log.Debug(Constants.LOGGING_SOURCE, "MetadataMappingFile present");
                     using (var sr = new StreamReader(metadataPropertiesStream))
                     {
                         var metadataPropertiesString = sr.ReadToEnd();
                         result = JsonConvert.DeserializeObject<Dictionary<String, Dictionary<String, String>>>(metadataPropertiesString);
+                        Log.Debug(Constants.LOGGING_SOURCE, "MetadataMappingFile parsed successfully");
                     }
                 }
+                else
+                {
+                    Log.Debug(Constants.LOGGING_SOURCE, "MetadataMappingFile absent");
+                }
+            }
+            else
+            {
+                Log.Debug(Constants.LOGGING_SOURCE, "MetadataMappingFile null");
             }
 
             return (result);
@@ -426,6 +447,8 @@ namespace OfficeDevPnP.Core.Framework.Provisioning.ObjectHandlers
         internal static List<Model.File> GetDirectoryFiles(this Model.Directory directory, 
             Dictionary<String, Dictionary<String, String>> metadataProperties = null)
         {
+            Log.Debug(Constants.LOGGING_SOURCE, "GetDirectoryFiles {0} => {1}", directory.Src, directory.Folder);
+
             var result = new List<Model.File>();
 
             var files = directory.ParentTemplate.Connector.GetFiles(directory.Src);
@@ -455,11 +478,13 @@ namespace OfficeDevPnP.Core.Framework.Provisioning.ObjectHandlers
 
             if (directory.Recursive)
             {
+                var srcdir = directory.Src;
+                var folderdir = directory.Folder;
                 var subFolders = directory.ParentTemplate.Connector.GetFolders(directory.Src);
                 foreach (var folder in subFolders)
                 {
-                    directory.Src += @"\" + folder;
-                    directory.Folder += @"\" + folder;
+                    directory.Src = srcdir + @"\" + folder;
+                    directory.Folder = folderdir + @"\" + folder;
                     result.AddRange(directory.GetDirectoryFiles(metadataProperties));
                 }
             }

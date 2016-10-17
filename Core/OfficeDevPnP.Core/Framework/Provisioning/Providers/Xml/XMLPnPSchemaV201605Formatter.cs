@@ -12,6 +12,7 @@ using OfficeDevPnP.Core.Framework.Provisioning.Providers.Xml.V201605;
 using ContentType = OfficeDevPnP.Core.Framework.Provisioning.Model.ContentType;
 using OfficeDevPnP.Core.Extensions;
 using Microsoft.SharePoint.Client;
+using OfficeDevPnP.Core.Diagnostics;
 
 namespace OfficeDevPnP.Core.Framework.Provisioning.Providers.Xml
 {
@@ -1856,6 +1857,8 @@ namespace OfficeDevPnP.Core.Framework.Provisioning.Providers.Xml
                             dir.Security.FromSchemaToTemplateObjectSecurityV201605()
                             )
                         );
+
+                    Log.Debug(Constants.LOGGING_SOURCE, "{0} Directory detected in schema", result.Directories.Count);
                 }
             }
 

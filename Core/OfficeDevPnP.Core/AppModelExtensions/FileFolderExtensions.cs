@@ -806,6 +806,7 @@ namespace Microsoft.SharePoint.Client
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Globalization", "CA1303:Do not pass literals as localized parameters", MessageId = "OfficeDevPnP.Core.Diagnostics.Log.Debug(System.String,System.String,System.Object[])")]
         public static File UploadFile(this Folder folder, string fileName, Stream stream, bool overwriteIfExists)
         {
+            Log.Debug(Constants.LOGGING_SOURCE, "Uploading fileName : {0}", fileName);
             if (fileName == null)
             {
                 throw new ArgumentNullException("fileName");
@@ -818,7 +819,7 @@ namespace Microsoft.SharePoint.Client
 
             if (string.IsNullOrWhiteSpace(fileName))
             {
-                throw new ArgumentException(CoreResources.FileFolderExtensions_UploadFile_Destination_file_name_is_required_, "fileName");
+                throw new ArgumentException(CoreResources.FileFolderExtensions_UploadFile_Destination_file_name_is_required_, " ArgumentException fileName");
             }
 
             if (Regex.IsMatch(fileName, REGEX_INVALID_FILE_NAME_CHARS))
