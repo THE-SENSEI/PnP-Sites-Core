@@ -99,6 +99,8 @@ namespace OfficeDevPnP.Core.Framework.Provisioning.ObjectHandlers
             {
                 if (template.Navigation != null)
                 {
+                    Log.Debug(Constants.LOGGING_SOURCE, "Navigation ProvisionObjects");
+
                     // The Navigation handler works only for sites with Publishing Features enabled
                     if (!web.IsPublishingWeb())
                     {
@@ -302,6 +304,7 @@ namespace OfficeDevPnP.Core.Framework.Provisioning.ObjectHandlers
         protected void TokenizeManagedNavigationTaxonomyIds(Web web, ManagedNavigation managedNavigation)
         {
             // Replace Taxonomy field references to SspId, TermSetId with tokens
+            
             TaxonomySession session = TaxonomySession.GetTaxonomySession(web.Context);
             TermStore defaultStore = session.GetDefaultSiteCollectionTermStore();
             web.Context.Load(defaultStore, ts => ts.Name, ts => ts.Id);

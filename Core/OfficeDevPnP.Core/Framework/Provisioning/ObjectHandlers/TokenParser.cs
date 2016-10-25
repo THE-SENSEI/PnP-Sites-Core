@@ -10,6 +10,7 @@ using System.Collections;
 using System.Diagnostics;
 using System.Globalization;
 using System.Text.RegularExpressions;
+using OfficeDevPnP.Core.Diagnostics;
 
 namespace OfficeDevPnP.Core.Framework.Provisioning.ObjectHandlers
 {
@@ -111,10 +112,33 @@ namespace OfficeDevPnP.Core.Framework.Provisioning.ObjectHandlers
             TaxonomySession session = TaxonomySession.GetTaxonomySession(web.Context);
 
             var termStores = session.EnsureProperty(s => s.TermStores);
-            foreach (var ts in termStores)
+            web.Context.Load(termStores);
+            web.Context.ExecuteQueryRetry();
+
+            foreach (var tst in termStores)
             {
-                _tokens.Add(new TermStoreIdToken(web, ts.Name, ts.Id));
+                _tokens.Add(new TermStoreIdToken(web, tst.Name, tst.Id));
+
+                ////Global term groups                
+                web.Context.Load(tst.Groups,
+                    g => g.Include(
+                        tg => tg.Name,
+                        tg => tg.TermSets.Include(
+                            ts => ts.Name,
+                            ts => ts.Id)
+                    ));
+                web.Context.ExecuteQueryRetry();
+                foreach (var termGroup in tst.Groups)
+                {
+                    Log.Debug(Constants.LOGGING_SOURCE, "Global Term Group : {0}", termGroup.Name);
+                    foreach (var termSet in termGroup.TermSets)
+                    {
+                        _tokens.Add(new TermSetIdToken(web, termGroup.Name, termSet.Name, termSet.Id));
+                    }
+                }
             }
+
+
             var termStore = session.GetDefaultSiteCollectionTermStore();
             web.Context.Load(termStore);
             web.Context.ExecuteQueryRetry();
@@ -285,6 +309,7 @@ namespace OfficeDevPnP.Core.Framework.Provisioning.ObjectHandlers
 
         public string ParseString(string input, params string[] tokensToSkip)
         {
+            //Log.Debug(Constants.LOGGING_SOURCE, "TokenParser Parse : {0}", input);
             var origInput = input;
             if (!string.IsNullOrEmpty(input))
             {

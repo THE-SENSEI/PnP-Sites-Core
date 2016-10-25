@@ -1,4 +1,5 @@
 using Microsoft.SharePoint.Client;
+using OfficeDevPnP.Core.Diagnostics;
 using System;
 using System.Text.RegularExpressions;
 
@@ -9,7 +10,7 @@ namespace OfficeDevPnP.Core.Framework.Provisioning.ObjectHandlers.TokenDefinitio
         private readonly string _value = null;
         public TermStoreIdToken(Web web, string storeName, Guid id)
             : base(web, string.Format("{{termstoreid:{0}}}", Regex.Escape(storeName)))
-        {
+        {            
             _value = id.ToString();
         }
 

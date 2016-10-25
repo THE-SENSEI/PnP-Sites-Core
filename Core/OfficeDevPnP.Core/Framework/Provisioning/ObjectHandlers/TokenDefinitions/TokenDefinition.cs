@@ -1,6 +1,7 @@
 ﻿using System.Linq;
 using System.Text.RegularExpressions;
 using Microsoft.SharePoint.Client;
+using OfficeDevPnP.Core.Diagnostics;
 
 namespace OfficeDevPnP.Core.Framework.Provisioning.ObjectHandlers.TokenDefinitions
 {
@@ -11,6 +12,8 @@ namespace OfficeDevPnP.Core.Framework.Provisioning.ObjectHandlers.TokenDefinitio
 
         public TokenDefinition(Web web, params string[] token)
         {
+            Log.Debug(Constants.LOGGING_SOURCE, "TokenDefinition : {0} : {1}", this.GetType().Name, string.Join(",",token));
+
             this._tokens = token;
             this.Web = web;
         }
