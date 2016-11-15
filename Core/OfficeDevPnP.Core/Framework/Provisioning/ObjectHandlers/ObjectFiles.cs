@@ -41,6 +41,7 @@ namespace OfficeDevPnP.Core.Framework.Provisioning.ObjectHandlers
                 var directoryFiles = new List<Model.File>();
                 foreach (var directory in template.Directories)
                 {
+                    Log.Debug(Constants.LOGGING_SOURCE, "Processing Directory {0}", directory.Src);
                     var metadataProperties = directory.GetMetadataProperties();
                     directoryFiles.AddRange(directory.GetDirectoryFiles(metadataProperties));
                 }
@@ -400,13 +401,16 @@ namespace OfficeDevPnP.Core.Framework.Provisioning.ObjectHandlers
 
             if (directory.MetadataMappingFile != null)
             {
-                var metadataPropertiesStream = directory.ParentTemplate.Connector.GetFileStream(directory.MetadataMappingFile);
-                if (metadataPropertiesStream != null)
+                if (!String.IsNullOrEmpty(directory.MetadataMappingFile))
                 {
-                    using (var sr = new StreamReader(metadataPropertiesStream))
+                    var metadataPropertiesStream = directory.ParentTemplate.Connector.GetFileStream(directory.MetadataMappingFile);
+                    if (metadataPropertiesStream != null)
                     {
-                        var metadataPropertiesString = sr.ReadToEnd();
-                        result = JsonConvert.DeserializeObject<Dictionary<String, Dictionary<String, String>>>(metadataPropertiesString);
+                        using (var sr = new StreamReader(metadataPropertiesStream))
+                        {
+                            var metadataPropertiesString = sr.ReadToEnd();
+                            result = JsonConvert.DeserializeObject<Dictionary<String, Dictionary<String, String>>>(metadataPropertiesString);
+                        }
                     }
                 }
             }
@@ -447,10 +451,14 @@ namespace OfficeDevPnP.Core.Framework.Provisioning.ObjectHandlers
             if (directory.Recursive)
             {
                 var subFolders = directory.ParentTemplate.Connector.GetFolders(directory.Src);
+
+                string _src = directory.Src;
+                string _folder = directory.Folder;
+
                 foreach (var folder in subFolders)
                 {
-                    directory.Src += @"\" + folder;
-                    directory.Folder += @"\" + folder;
+                    directory.Src = _src + @"\" + folder;
+                    directory.Folder = _folder + @"\" + folder;
                     result.AddRange(directory.GetDirectoryFiles(metadataProperties));
                 }
             }

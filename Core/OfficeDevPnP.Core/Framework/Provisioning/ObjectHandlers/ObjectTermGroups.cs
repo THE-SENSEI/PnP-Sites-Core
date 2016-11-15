@@ -39,6 +39,7 @@ namespace OfficeDevPnP.Core.Framework.Provisioning.ObjectHandlers
                     new SiteCollectionTermGroupNameToken(web);
                 foreach (var modelTermGroup in template.TermGroups)
                 {
+                    Log.Debug(Constants.LOGGING_SOURCE, "Processing Group : {0}/{1}", modelTermGroup.Name, modelTermGroup.Id);
                     #region Group
 
                     var newGroup = false;
@@ -47,6 +48,7 @@ namespace OfficeDevPnP.Core.Framework.Provisioning.ObjectHandlers
                         g => g.Id == modelTermGroup.Id || g.Name == modelTermGroup.Name);
                     if (group == null)
                     {
+                        Log.Debug(Constants.LOGGING_SOURCE, "Group doesn't exists");
                         if (modelTermGroup.Name == "Site Collection" ||
                             parser.ParseString(modelTermGroup.Name) ==
                             siteCollectionTermGroupNameToken.GetReplaceValue() ||
@@ -66,6 +68,7 @@ namespace OfficeDevPnP.Core.Framework.Provisioning.ObjectHandlers
 
                             if (group == null)
                             {
+                                Log.Debug(Constants.LOGGING_SOURCE, "Group doesn't exists (2)");
                                 if (modelTermGroup.Id == Guid.Empty)
                                 {
                                     modelTermGroup.Id = Guid.NewGuid();
@@ -112,6 +115,9 @@ namespace OfficeDevPnP.Core.Framework.Provisioning.ObjectHandlers
 
                     foreach (var modelTermSet in modelTermGroup.TermSets)
                     {
+                        Log.Debug(Constants.LOGGING_SOURCE, "Processing Termset : {0}/{1}", modelTermSet.Name, modelTermSet.Id);
+                        //TODO
+
                         TermSet set = null;
                         var newTermSet = false;
                         if (!newGroup)
@@ -122,6 +128,7 @@ namespace OfficeDevPnP.Core.Framework.Provisioning.ObjectHandlers
                         }
                         if (set == null)
                         {
+                            Log.Debug(Constants.LOGGING_SOURCE, "new Termset, creating");
                             if (modelTermSet.Id == Guid.Empty)
                             {
                                 modelTermSet.Id = Guid.NewGuid();
@@ -135,6 +142,7 @@ namespace OfficeDevPnP.Core.Framework.Provisioning.ObjectHandlers
                             set.IsAvailableForTagging = modelTermSet.IsAvailableForTagging;
                             foreach (var property in modelTermSet.Properties)
                             {
+                                Log.Debug(Constants.LOGGING_SOURCE, "setting property {0}, value : {1}", property.Key, parser.ParseString(property.Value));
                                 set.SetCustomProperty(property.Key, parser.ParseString(property.Value));
                             }
                             if (modelTermSet.Owner != null)
@@ -152,6 +160,7 @@ namespace OfficeDevPnP.Core.Framework.Provisioning.ObjectHandlers
 
                         foreach (var modelTerm in modelTermSet.Terms)
                         {
+                            Log.Debug(Constants.LOGGING_SOURCE, "Processing Term : {0}/{1}", modelTerm.Name, modelTerm.Id);
                             if (!newTermSet)
                             {
                                 if (terms.Any())
@@ -172,16 +181,24 @@ namespace OfficeDevPnP.Core.Framework.Provisioning.ObjectHandlers
                                         }
                                         else
                                         {
+                                            Log.Debug(Constants.LOGGING_SOURCE, "Term already exists 1");
+                                            
                                             modelTerm.Id = term.Id;
                                         }
                                     }
                                     else
                                     {
+                                        Log.Debug(Constants.LOGGING_SOURCE, "Term already exists 2");
+
+                                        this.CreateChildTerms(web, modelTerm, term, termStore, parser, scope);
+
                                         modelTerm.Id = term.Id;
+
                                     }
                                 }
                                 else
                                 {
+                                    Log.Debug(Constants.LOGGING_SOURCE, "Term is empty");
                                     var returnTuple = CreateTerm<TermSet>(web, modelTerm, set, termStore, parser, scope);
                                     if (returnTuple != null)
                                     {
@@ -192,6 +209,7 @@ namespace OfficeDevPnP.Core.Framework.Provisioning.ObjectHandlers
                             }
                             else
                             {
+                                Log.Debug(Constants.LOGGING_SOURCE, "Term is new, creating...");
                                 var returnTuple = CreateTerm<TermSet>(web, modelTerm, set, termStore, parser, scope);
                                 if (returnTuple != null)
                                 {
@@ -260,7 +278,6 @@ namespace OfficeDevPnP.Core.Framework.Provisioning.ObjectHandlers
             if (parent is Term)
             {
                 term = ((Term)parent).CreateTerm(parser.ParseString(modelTerm.Name), modelTerm.Language ?? termStore.DefaultLanguage, modelTerm.Id);
-
             }
             else
             {
@@ -345,6 +362,8 @@ namespace OfficeDevPnP.Core.Framework.Provisioning.ObjectHandlers
             {
                 foreach (var modelTermTerm in modelTerm.Terms)
                 {
+                    Log.Debug(Constants.LOGGING_SOURCE, "Processing Term : {0}/{1}", modelTermTerm.Name, modelTermTerm.Id);
+
                     web.Context.Load(term.Terms);
                     web.Context.ExecuteQueryRetry();
                     var termTerms = term.Terms;
@@ -363,11 +382,13 @@ namespace OfficeDevPnP.Core.Framework.Provisioning.ObjectHandlers
                             else
                             {
                                 modelTermTerm.Id = termTerm.Id;
+                                Log.Debug(Constants.LOGGING_SOURCE, "Term already exists 1");
                             }
                         }
                         else
                         {
                             modelTermTerm.Id = termTerm.Id;
+                            Log.Debug(Constants.LOGGING_SOURCE, "Term already exists 2");
                         }
                     }
                     else
