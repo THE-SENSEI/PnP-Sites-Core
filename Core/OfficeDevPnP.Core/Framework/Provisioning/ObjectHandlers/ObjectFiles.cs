@@ -421,6 +421,9 @@ namespace OfficeDevPnP.Core.Framework.Provisioning.ObjectHandlers
         internal static List<Model.File> GetDirectoryFiles(this Model.Directory directory, 
             Dictionary<String, Dictionary<String, String>> metadataProperties = null)
         {
+
+            Log.Debug(Constants.LOGGING_SOURCE, "Processing Directory {0}", directory.Src);
+
             var result = new List<Model.File>();
 
             var files = directory.ParentTemplate.Connector.GetFiles(directory.Src);
