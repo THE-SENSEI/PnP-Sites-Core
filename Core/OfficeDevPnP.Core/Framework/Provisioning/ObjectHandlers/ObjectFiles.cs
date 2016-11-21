@@ -48,6 +48,7 @@ namespace OfficeDevPnP.Core.Framework.Provisioning.ObjectHandlers
 
                 foreach (var file in template.Files.Union(directoryFiles))
                 {
+                    Log.Debug(Constants.LOGGING_SOURCE, "Processing File {0}", file.Src);
                     var folderName = parser.ParseString(file.Folder);
 
                     if (folderName.ToLower().StartsWith((web.ServerRelativeUrl.ToLower())))
@@ -122,7 +123,15 @@ namespace OfficeDevPnP.Core.Framework.Provisioning.ObjectHandlers
 
                         if (checkedOut)
                         {
+                            Log.Debug(Constants.LOGGING_SOURCE, "Checking-in File {0}", file.Src);
                             targetFile.CheckIn("", CheckinType.MajorCheckIn);
+                            web.Context.ExecuteQueryRetry();
+                        }
+
+                        if (file.Level == Model.FileLevel.Published)
+                        {
+                            Log.Debug(Constants.LOGGING_SOURCE, "Publishing File {0}", file.Src);
+                            targetFile.Publish("");
                             web.Context.ExecuteQueryRetry();
                         }
 
